@@ -61,7 +61,7 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, label_x, label_y, w
         print("The routine is currently plotting cluster {index}".format(index = j))
         
         ## define mask for the cluster and extend for third dimension
-        mask = np.zeros((len(cluster_map[0]), len(cluster_map)), dtype=int)
+        mask = np.zeros((len(cluster_map[0]),len(cluster_map)),dtype=int)
         mask[cluster_map==j] = 1
         mask_3d = np.broadcast_to(mask, data_3d.shape)
         
