@@ -3,10 +3,12 @@ import numpy as np
 
 ## Convert the velocity to a pixel index based on the provided header information
 def vel_to_pixel(vel, crval, dv, crpix):
-    ## calculate the pixel index
-    pixel = int((vel - crval)/dv + crpix + 0.5)
+    return int((vel - crval)/dv + crpix + 0.5)
     
-    return pixel
+
+## Convert the pixel location to the velocity based on the provided header information
+def pixel_to_vel(pix, crval, dv, crpix):
+    return crval + dv*(pix - crpix)
 
 
 ## return an array of velocities based on a velocity range and  information from the header of a hyperimage
