@@ -21,10 +21,11 @@ def inspect_intensity_map(dat, dv, wcs_val, unit_integrated_intensity):
     ax1 = fig.add_subplot(111, projection = wcs_val)
     im = ax1.imshow(int_map, origin='lower', vmin=0., cmap = 'jet')
     
-    ## set the limits and labels of the plot
+    ## set the limits of the plot
     plt.xlim([0, len(int_map[0])])
     plt.ylim([0, len(int_map)])
     
+    ## add the labels to the plot
     plt.xlabel('RA [J2000]')
     plt.ylabel('DEC [J2000]',labelpad=-1.)
     
@@ -37,15 +38,19 @@ def inspect_intensity_map(dat, dv, wcs_val, unit_integrated_intensity):
 
 
 ## Use matplotlib to plot the input from two arrays
-def plot_two_lists(list_x,list_y,label_x,label_y):
+def plot_two_lists(list_x, list_y, label_x, label_y):
+    ## plot the two lists together
     plt.plot(list_x,list_y,'-o')
+    
+    ## add the labels on the plot
     plt.xlabel(label_x)
     plt.ylabel(label_y)
+    
     plt.show()
 
 
 ## plot the cluster and corresponding spectra on a single figure with an option to save the figure
-def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300):
+def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize = False, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300):
     ## define the two axes used for the plot
     fig, ax = plt.subplots(figsize = (10, 5))
     ax1 = fig.add_subplot(121, projection = wcs_val)
@@ -69,6 +74,10 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, plot_path 
         cluster = data_3d.copy()
         cluster[mask_3d == 0] = np.nan
         cluster_spectrum = np.nanmean(cluster,axis=(1,2))
+        
+        ## normalize the spectrum if requested
+        if(normalize):
+            cluster_spectrum = cluster_spectrum / np.nanmax(cluster_spectrum)
         
         ## plot spectrum
         p = ax2.step(vel_arr, cluster_spectrum, label = "Cluster " + str(j+1))
