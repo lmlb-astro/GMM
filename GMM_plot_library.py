@@ -12,13 +12,13 @@ import os
 
 
 ## inspect the data using the integrated intensity map
-def inspect_intensity_map(dat, dv, wVal, unit_integrated_intensity):
+def inspect_intensity_map(dat, dv, wcs_val, unit_integrated_intensity):
     ## Produce the intensity map
-    int_map = dv*np.sum(dat, axis=0)
+    int_map = dv*np.sum(dat, axis = 0)
     
     ## plot the integrated intensity map
     fig, ax = plt.subplots()
-    ax1 = fig.add_subplot(111, projection=wVal)
+    ax1 = fig.add_subplot(111, projection = wcs_val)
     im = ax1.imshow(int_map, origin='lower', vmin=0., cmap = 'jet')
     
     ## set the limits and labels of the plot
@@ -45,10 +45,10 @@ def plot_two_lists(list_x,list_y,label_x,label_y):
 
 
 ## plot the cluster and corresponding spectra on a single figure with an option to save the figure
-def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, label_x, label_y, wVal, save_opt, plot_path, save_name, dpi_val):
+def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300):
     ## define the two axes used for the plot
-    fig, ax = plt.subplots()
-    ax1 = fig.add_subplot(121, projection=wVal)
+    fig, ax = plt.subplots(figsize = (10, 5))
+    ax1 = fig.add_subplot(121, projection = wcs_val)
     ax2 = fig.add_subplot(122)
     
     ## determine the range of values associated with the clusters
@@ -62,12 +62,12 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, label_x, label_y, w
         
         ## define mask for the cluster and extend for third dimension
         mask = np.zeros((len(cluster_map[0]), len(cluster_map)), dtype=int)
-        mask[cluster_map==j] = 1
+        mask[cluster_map == j] = 1
         mask_3d = np.broadcast_to(mask, data_3d.shape)
         
         ## calculate the average cluster spectrum
         cluster = data_3d.copy()
-        cluster[mask_3d==0] = np.nan
+        cluster[mask_3d == 0] = np.nan
         cluster_spectrum = np.nanmean(cluster,axis=(1,2))
         
         ## plot spectrum
@@ -77,7 +77,7 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, label_x, label_y, w
         color_val = p[0].get_color()
         color_map = colors.ListedColormap([color_val])
         mask = mask.astype(float)
-        mask[mask==0] = np.nan
+        mask[mask == 0] = np.nan
         
         ## plot the map
         im = ax1.imshow(mask, origin='lower', cmap = color_map)
@@ -94,15 +94,21 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, label_x, label_y, w
     ax2.set_ylabel(label_y)
     ax2.legend()
     
+    ## finalizing the axes
     ax.axis('off')
     plt.tight_layout()
     
-    if(save_opt):
-        if not os.path.isdir(plot_path):
-            os.makedirs(plot_path)
-        plt.savefig(plot_path+save_name,dpi=dpi_val)
+    ## optionally saving the file if a path is provided
+    if(plot_path):
+        ## If the directory does not exist, create it
+        directory = "/".join(plot_path.split("/")[:-1])
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        
+        ## save the figure
+        plt.savefig(plot_path, dpi = dpi_val)
     
-    plt.show
+    plt.show()
 
 
 
