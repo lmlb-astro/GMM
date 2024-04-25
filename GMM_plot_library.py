@@ -49,6 +49,19 @@ def plot_two_lists(list_x, list_y, label_x, label_y):
     plt.show()
 
 
+## function to save the figure
+def save_the_fig(fig, plot_path, dpi_val = 300):
+    ## verify there is a path to save the figure
+    if(plot_path):
+        ## If the directory does not exist, create it
+        directory = "/".join(plot_path.split("/")[:-1])
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        
+        ## save the figure
+        fig.savefig(plot_path, dpi = dpi_val)
+
+
 ## plot the cluster and corresponding spectra on a single figure with an option to save the figure
 def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize = False, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300):
     ## define the two axes used for the plot
@@ -61,7 +74,6 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize 
     max_val = int(np.nanmax(cluster_map)+0.5)
     
     ## loop over clusters to plot spectra
-    mask = np.zeros((len(cluster_map[0]),len(cluster_map)),dtype=int)
     for j in range(min_val,max_val+1):
         print("The routine is currently plotting cluster {index}".format(index = j))
         
@@ -107,15 +119,9 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize 
     ax.axis('off')
     plt.tight_layout()
     
+    
     ## optionally saving the file if a path is provided
-    if(plot_path):
-        ## If the directory does not exist, create it
-        directory = "/".join(plot_path.split("/")[:-1])
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
-        
-        ## save the figure
-        plt.savefig(plot_path, dpi = dpi_val)
+    save_the_fig(fig, plot_path, dpi_val)
     
     plt.show()
 
