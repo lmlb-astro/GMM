@@ -7,17 +7,12 @@ import time
 import astropy.io.fits as pyfits
 import astropy.wcs as wcs
 
+from scipy.signal import decimate
+from scipy.signal import resample
+
 from sklearn.mixture import GaussianMixture
 
 import velocity_axis_datacube as vax
-
-#### parameters related to fit_GMM ####
-
-#seed_val = 312
-#threshold = 0.001
-#gmm_iter = 1000
-
-#####################################
 
 
 ## prepare the data for input into the GMM model
@@ -103,6 +98,27 @@ def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001
 
 
 
+## Resample the data along the spectral axis to reduce the computational time of the GMM
+## https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.decimate.html
+## not a periodic system, so can't use scipy.signal.resample
+def resample_data(data_in, dv, dv_resamp, resamp_bool = False):
+    ## calculate the decimation factor
+    factor = int(dv_resamp/dv + 0.5)
+    
+    ## resample using scipy.signal.decimate
+    print('\n')
+    print("The number of spectral bins is reduced by a factor: {fact}".format(fact = factor))
+    data_reduced_resamp = decimate(data_in, factor, axis = 0)
+    
+    ## use scipy.signal.resample instead if chosen
+    if(resamp_bool):
+        data_reduced_resamp = resample(data_in, num = int(data_in.shape[0]*dv/dv_resamp + 0.5), axis = 0)
+        print("Using scipy.signal.resample")
+    
+    ## print the new shape of the spectral data cube
+    print("new shape of the spectral cube: {shape}".format(shape = data_reduced_resamp.shape))
+    
+    return data_reduced_resamp
 
 
 
