@@ -13,9 +13,9 @@ import velocity_axis_datacube as vax
 
 #### parameters related to fit_GMM ####
 
-seed_val = 312
-threshold = 0.001
-gmm_iter = 1000
+#seed_val = 312
+#threshold = 0.001
+#gmm_iter = 1000
 
 #####################################
 
@@ -67,7 +67,7 @@ def map_spatial_cluster_distribution(cluster_inds_arr, index_arr, len_x_orig_map
 
 
 ## loop over number of clusters for the GMM modeling
-def fit_GMM(data_in, n_comps_min, n_comps_max):
+def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001, gmm_iter = 1000):
     ## initialize the storage lists
     n_comps_list = []
     time_list = []
