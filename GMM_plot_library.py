@@ -8,6 +8,8 @@ from matplotlib import colors
 import astropy.io.fits as pyfits
 import astropy.wcs as wcs
 
+import GMM_functions as fGMM
+
 import os
 
 
@@ -70,8 +72,7 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize 
     ax2 = fig.add_subplot(122)
     
     ## determine the range of values associated with the clusters
-    min_val = int(np.nanmin(cluster_map)+0.5)
-    max_val = int(np.nanmax(cluster_map)+0.5)
+    min_val, max_val = fGMM.get_cluster_range(cluster_map)
     
     ## loop over clusters to plot spectra
     for j in range(min_val,max_val+1):
@@ -80,12 +81,10 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize 
         ## define mask for the cluster and extend for third dimension
         mask = np.zeros((len(cluster_map[0]), len(cluster_map)), dtype=int)
         mask[cluster_map == j] = 1
-        mask_3d = np.broadcast_to(mask, data_3d.shape)
         
         ## calculate the average cluster spectrum
-        cluster = data_3d.copy()
-        cluster[mask_3d == 0] = np.nan
-        cluster_spectrum = np.nanmean(cluster,axis=(1,2))
+        cluster_spectrum, spectrum_std = fGMM.get_average_spectrum(data_3d, mask)
+        
         
         ## normalize the spectrum if requested
         if(normalize):
@@ -126,6 +125,48 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize 
     plt.show()
 
 
-
+## Plot the average spectra and their standard deviation for each cluster
+def plot_cluster_spectra(data_3d, cluster_map, vel_arr, normalize = False, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300):
+    ## determine the range of values associated with the clusters
+    min_val, max_val = fGMM.get_cluster_range(cluster_map)
+    diff = max_val + 1 - min_val
+    
+    ## determine the number of subplots
+    fig, axs = plt.subplots(nrows = diff//3 + 1, ncols = 3, figsize = (3*(diff//3), 6))
+    
+    ## loop over all clusters
+    for j in range(min_val,max_val+1):
+        print("The routine is currently plotting cluster {index}".format(index = j))
+        
+        ## define mask for the cluster and extend for third dimension
+        mask = np.zeros((len(cluster_map[0]), len(cluster_map)), dtype=int)
+        mask[cluster_map == j] = 1
+        
+        ## calculate the average cluster spectrum
+        cluster_spectrum, spectrum_std = fGMM.get_average_spectrum(data_3d, mask)
+        
+        
+        ## normalize the spectrum if requested
+        if(normalize):
+            spectrum_std = spectrum_std / np.nanmax(cluster_spectrum)
+            cluster_spectrum = cluster_spectrum / np.nanmax(cluster_spectrum)
+        
+        ## define the lower and upper values of the standard deviation
+        std_up = cluster_spectrum + spectrum_std
+        std_low = cluster_spectrum - spectrum_std
+        
+        ## plot the standard deviation
+        axs[(j-min_val)//3, (j-min_val)%3].fill_between(vel_arr, y1 = std_low, y2 = std_up, step = 'pre')
+            
+        ## plot spectrum
+        axs[(j-min_val)//3, (j-min_val)%3].step(vel_arr, cluster_spectrum, label = "Cluster " + str(j+1), color = 'k')
+        
+        if((j-min_val)//3 == diff//3):
+            axs[(j-min_val)//3, (j-min_val)%3].set_xlabel(label_x)
+        if((j-min_val)%3 == 0):
+            axs[(j-min_val)//3, (j-min_val)%3].set_ylabel(label_y)
+        
+    plt.tight_layout()
+    plt.show()
 
 

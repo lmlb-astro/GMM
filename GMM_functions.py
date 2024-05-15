@@ -121,5 +121,24 @@ def resample_data(data_in, dv, dv_resamp, resamp_bool = False):
     return data_reduced_resamp
 
 
+## Get the average spectrum and the standard deviation in a region identified by a mask
+def get_average_spectrum(data_3d, mask):
+    ## Extend the mask to 3D
+    mask_3d = np.broadcast_to(mask, data_3d.shape)
+        
+    ## calculate the average cluster spectrum
+    cluster = data_3d.copy()
+    cluster[mask_3d == 0] = np.nan
+    cluster_spectrum = np.nanmean(cluster, axis = (1, 2))
+    cluster_std = np.nanstd(cluster, axis = (1, 2))
+    
+    return cluster_spectrum, cluster_std
 
 
+
+## get the range of cluster numbers in a map
+def get_cluster_range(cluster_map):
+    min_val = int(np.nanmin(cluster_map)+0.5)
+    max_val = int(np.nanmax(cluster_map)+0.5)
+    
+    return min_val, max_val
