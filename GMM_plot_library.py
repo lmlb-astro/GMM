@@ -65,7 +65,7 @@ def save_the_fig(fig, plot_path, dpi_val = 300):
 
 
 ## plot the cluster and corresponding spectra on a single figure with an option to save the figure
-def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize = False, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300):
+def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize = False, plot_path = None, label_x = "v (km s$^{-1}$)", label_y = "T$_{mb}$ (K)", dpi_val = 300, uncertain_map = None):
     ## define the two axes used for the plot
     fig, ax = plt.subplots(figsize = (10, 5))
     ax1 = fig.add_subplot(121, projection = wcs_val)
@@ -100,7 +100,11 @@ def plot_clusters_and_spectra(data_3d, cluster_map, vel_arr, wcs_val, normalize 
         mask[mask == 0] = np.nan
         
         ## plot the map
-        im = ax1.imshow(mask, origin='lower', cmap = color_map)
+        im = ax1.imshow(mask, origin = 'lower', cmap = color_map)
+    
+    ## Indicate the pixels with low certainty in black
+    if(uncertain_map is not None):
+        im = ax1.imshow(uncertain_map, origin = 'lower', cmap = 'binary', vmin = 0., vmax = 1.)
     
     ## finalize axis 1
     ax1.set_xlim([0, len(cluster_map[0])])

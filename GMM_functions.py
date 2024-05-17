@@ -49,7 +49,7 @@ def prepare_data(data, min_vel, max_vel, crval, dv, crpix):
 def map_spatial_cluster_distribution(cluster_inds_arr, index_arr, len_x_orig_map, len_y_orig_map):
     ## initialize the map for the cluster tags
     cluster_map = np.zeros((len_x_orig_map, len_y_orig_map), dtype=float)
-    cluster_map[cluster_map==0] = np.nan
+    cluster_map[cluster_map == 0] = np.nan
     
     ## allocate cluster index values to pixels in the map based on the index array
     for cluster_ind, ind in zip(cluster_inds_arr,index_arr):
@@ -61,8 +61,28 @@ def map_spatial_cluster_distribution(cluster_inds_arr, index_arr, len_x_orig_map
 
 
 
+## Map the spatial distribution of the pixels with low certainty on the assigned cluster
+def map_uncertain_distribution(prob_ratio, index_arr, len_x_orig_map, len_y_orig_map):
+    ## initialize the map for the cluster tags
+    unc_map = np.zeros((len_x_orig_map, len_y_orig_map), dtype=float)
+    unc_map[unc_map == 0] = np.nan
+    
+    ## identify the pixel position with uncertain cluster assignment
+    for prob, ind in zip(prob_ratio, index_arr):
+        if(~np.isnan(prob)):
+            pos_x = ind%len_x_orig_map
+            pos_y = int(ind/len_x_orig_map)
+            unc_map[pos_y][pos_x] = 1
+    
+    return unc_map
+    
+
+
+
+
+
 ## loop over number of clusters for the GMM modeling
-def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001, gmm_iter = 1000):
+def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001, gmm_iter = 1000, print_time = False):
     ## initialize the storage lists
     n_comps_list = []
     time_list = []
@@ -82,6 +102,8 @@ def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001
                                      tol = threshold, 
                                      max_iter = gmm_iter).fit(data_in)
         end_time = time.time()
+        if(print_time):
+            print("total time: {t} s".format(t = end_time - start_time))
         time_list.append(end_time - start_time)
         
         ## calculate the Bayesian Information Criterion (BIC)
