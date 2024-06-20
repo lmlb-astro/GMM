@@ -14,7 +14,7 @@ import os
 
 
 ## inspect the data using the integrated intensity map
-def inspect_intensity_map(dat, dv, wcs_val, unit_integrated_intensity):
+def inspect_intensity_map(dat, dv, wcs_val, unit_integrated_intensity, cmap_col = 'jet'):
     print(wcs_val)
     ## Produce the intensity map
     int_map = dv*np.sum(dat, axis = 0)
@@ -22,7 +22,7 @@ def inspect_intensity_map(dat, dv, wcs_val, unit_integrated_intensity):
     ## plot the integrated intensity map
     fig, ax = plt.subplots()
     ax1 = fig.add_subplot(111, projection = wcs_val)
-    im = ax1.imshow(int_map, origin='lower', vmin=0., cmap = 'jet')
+    im = ax1.imshow(int_map, origin='lower', vmin=0., cmap = cmap_col)
     
     ## set the limits of the plot
     plt.xlim([0, len(int_map[0])])
