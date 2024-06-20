@@ -16,11 +16,11 @@ import velocity_axis_datacube as vax
 
 
 ## prepare the data for input into the GMM model
-def prepare_data(data, min_vel, max_vel, crval, dv, crpix):
+def prepare_data(data):
     
     ## resample data, so that the GMM can handle it
     ## i.e. resample the data to a single array of the spectra
-    len_resample = data.shape[1] * data.shape[2] #len(data[0])*len(data[0][0])
+    len_resample = data.shape[1] * data.shape[2] 
     data_resample = data.reshape(len(data),len_resample)
     print("Dimensions of resampled data: {shape}".format(shape = data_resample.shape))
     
@@ -89,11 +89,12 @@ def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001
     bic_list = []
     bic_min = None
     best_model = None
+    norm_lower_bounds =[]
     
     ## loop over the number of components to be fitted
     for i in range(n_comps_min, n_comps_max):
         ## perform the GMM fitting
-        print("Calculating GMM for {index} number of components".format(index = i))
+        print("Calculating GMM for {index} components".format(index = i))
         start_time = time.time()
         temp_model = GaussianMixture(n_components = i, 
                                      init_params = 'kmeans', 
@@ -102,8 +103,14 @@ def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001
                                      tol = threshold, 
                                      max_iter = gmm_iter).fit(data_in)
         end_time = time.time()
+        
+        ## Print the relevant fitting information
         if(print_time):
             print("total time: {t} s".format(t = end_time - start_time))
+            print("converged: {conv}".format(conv = temp_model.converged_)) ## whether it converged
+            print("num iterations: {nit}".format(nit = temp_model.n_iter_)) ## the number of iterations before convergance
+            #print("lower bound L: {lb}".format(lb = temp_model.lower_bound_)) ## the lower bound of the log-likelihood
+        print("\n")
         time_list.append(end_time - start_time)
         
         ## calculate the Bayesian Information Criterion (BIC)
@@ -115,8 +122,9 @@ def fit_GMM(data_in, n_comps_min, n_comps_max, seed_val = 312, threshold = 0.001
             bic_min = temp_bic
         n_comps_list.append(i)
         bic_list.append(temp_bic)
+        norm_lower_bounds.append(temp_model.lower_bound_ / data_in.shape[0])
         
-    return n_comps_list, bic_list, time_list, best_model
+    return n_comps_list, bic_list, time_list, best_model, norm_lower_bounds
 
 
 
